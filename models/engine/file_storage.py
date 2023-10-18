@@ -1,44 +1,44 @@
 #!/usr/bin/python3
-"""This module defines a FileStorage class"""
+""" File storage module """
+import models
+from models.base_model import BaseModel
 import json
-import datetime
+from models.user import User
+from models.state import State
+from models.city import City
+from models.place import Place
+from models.amenity import Amenity
+from models.review import Review
 
 
 class FileStorage:
-    """Serializes instances to a JSON file and deserializes
-    JSON file to instances"""
+    """ Class FileStorage serves as file storage engine """
     __file_path = "file.json"
     __objects = {}
 
-    def all(self):
-        """Returns all objects"""
-        return FileStorage.__objects
+    def all(self, cls=None):
+        """ Returns the dictionary __objects """
+        return {k: v for k, v in self.__objects.items() if cls is None or
+                cls == v.__class__ or cls == v.__class__.__name__}
 
     def new(self, obj):
-        """Sets obj in __objects with key <obj class name>.id"""
-        key = "{}.{}".format(type(obj).__name__, obj.id)
-        FileStorage.__objects[key] = obj
+        """ Sets in __objects the obj with key <obj class name>.id"""
+        self.__objects[f"{obj.__class__.__name__}.{obj.id}"] = obj
 
     def save(self):
-        """Serializes __objects to JSON file"""
-        def datetime_converter(x):
-            if isinstance(x, datetime.datetime):
-                return x.__str__()
-
-        json_dict = {}
-        for key, value in FileStorage.__objects.items():
-            json_dict[key] = value.to_dict()
-        with open(FileStorage.__file_path, 'w') as f:
-            json.dump(json_dict, f, default=datetime_converter)
+        """ Serializes __objects to the JSON file """
+        with open(self.__file_path, 'w', encoding="UTF-8") as f:
+            json.dump({k: v.to_dict() for k, v in self.__objects.items()}, f)
 
     def reload(self):
-        """Deserializes JSON file to __objects"""
+        """ Deserializes the JSON file to __objects """
         try:
-            with open(FileStorage.__file_path, 'r') as f:
-                json_dict = json.load(f)
-            for key, value in json_dict.items():
-                cls_name = value["_class_"]
-                cls = eval(cls_name)
-                FileStorage.__objects[key] = cls(**value)
+            with open(self.__file_path, 'r', encoding="utf-8") as f:
+                self.__objects = {k: eval(v['__class__'])(**v)
+                                  for k, v in json.load(f).items()}
         except FileNotFoundError:
             pass
+
+    def count(self, cls):
+        """ Counts the number of objects in storage """
+        return sum(cls in key for key in models.storage.all().keys())
