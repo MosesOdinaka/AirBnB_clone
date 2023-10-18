@@ -20,7 +20,7 @@ class BaseModel:
             setattr(self, key, value)
 
     def save(self):
-        """ 
+        """
         Updates the public instance attribute updated_at with the current
         datetime
         """
@@ -31,14 +31,13 @@ class BaseModel:
         """ Returns a dictionary containing all keys/values of __dict__ of the
         instance """
         dict1 = {
-            **self.__dict__, 
-             'created_at': self.created_at.strftime("%Y-%m-%dT%H:%M:%S.%f"), 
-             'updated_at': self.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%f"), 
-             '__class__': self.__class__.__name__
+            **self.__dict__,
+            'created_at': self.created_at.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            'updated_at': self.updated_at.strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            '__class__': self.__class__.__name__
         }
         return dict1
 
     def __str__(self):
         """ Prints a string representation """
         return f"[{self.__class__.__name__}] ({self.id}) {self.__dict__}"
-
